@@ -1,0 +1,13 @@
+services:
+  demo: &demo
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: es_demo
+    env_file: .env
+    volumes:
+      - ./:/app
+    command: python
+  bash:
+    <<: *demo
+    command: bash
