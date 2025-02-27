@@ -2,7 +2,7 @@
 Get an Elasticsearch and Kibana instance deployed to EKS and play around with it.
 
 ## Goals
-1. Learn and demonstrate K8s cluster creation suitable for production search index for GBH Archives.
+1. Learn and demonstrate K8s cluster creation suitable for production Elasticsearch instance for GBH Archives.
 1. Learn and deploy Elasticsearch with Kibana to EKS cluster.
 1. Ingest PBCore JSON documents
    1. Using `_bulk` API
