@@ -6,4 +6,4 @@ RUN pip install pdm
 COPY pyproject.toml pdm.lock README.md demo/ ./
 RUN pdm install 
 
-CMD [ "python" ]
+CMD [ "pdm", "run", "python" ]
