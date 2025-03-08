@@ -73,7 +73,12 @@ body = {
                         "contributorRole": { "type": "keyword" }
                     }
                 },
-                "pbcoreRightsSummary": { "type": "text" },
+                "pbcoreRightsSummary": {
+                    "type": "nested",
+                    "properties": {
+                        "rightsSummary": { "type": "text" }
+                    }
+                },
                 "pbcoreInstantiation": {
                     "type": "nested",
                     "properties": {
@@ -99,7 +104,7 @@ body = {
                         "instantiationDate": {
                             "type": "nested",
                             "properties": {
-                                "instantiationDate": { "type": "date" }
+                                "instantiationDate": { "type": "text" }
                             }
                         },
                         "instantiationFileSize": { "type": "keyword" },

@@ -5,7 +5,7 @@ from glob import glob
 from pprint import pprint as pp
 
 # import local modules
-from demo import es
+from demo.es import client
 from demo.indices import pbcore_full_v1
 
 
@@ -35,10 +35,11 @@ def pbcore_docs(filenames):
 
 
 # Generator function to yield PBCore JSON documents with metadata for bulk ingestion.
-def pbocre_docs_bulk(pbcore_docs):
+def pbcore_docs_bulk(pbcore_docs, index_name):
     """Yield PBCore JSON documents with metadata from files in the specified directory."""
     for pbcore_doc in pbcore_docs:
         aapb_id = aapb_id_from_pbcore_doc(pbcore_doc)
+        print(f"aapb_id: {aapb_id}")
         if not aapb_id:
             print(f"Skipping file: No valid AAPB ID found.")
             continue
@@ -56,23 +57,26 @@ def ingest(file_pattern, index_name):
     filenames = glob(file_pattern)
     docs = list(pbcore_docs(filenames))
 
+    breakpoint()
+
+
     if not docs:
         print(f"No pbcore JSON documents found for file pattern {file_pattern}")
         return
     elif len(docs) == 1:
         pbcore = docs[0]
         aapb_id = aapb_id_from_pbcore_doc(pbcore)
-        es.client.index(index=index_name, id=aapb_id, document=pbcore)
+        client.index(index=index_name, id=aapb_id, document=pbcore)
         print(f"Ingested doc matching {file_pattern} with ID {aapb_id} into {index_name}")
     else:
-        helpers.bulk(es.client, pbcore_docs_bulk(docs, index_name))
-        print(f"Ingested {len(docs)} docs from file pattern {file_pattern} into {index_name}")
+        print(f"Attempting bulk ingest of {len(docs)} PBCore JSON docs from file pattern {file_pattern} into {index_name}...")
+        results = helpers.bulk(client, pbcore_docs_bulk(docs, index_name))
+        breakpoint()
+        print(f"Bulk ingest completed. {results[0]} documents indexed.")
+        
 
 
 if __name__ == "__main__":
-    try:
-        es.client.indices.create(index=pbcore_full_v1.name, body=pbcore_full_v1.body)
-        # ingest('data/1.json', 'pbcore_full_v1')
-
-    except Exception as e:
-        print(f"Error: {e}")
+    client.indices.delete(index=pbcore_full_v1.name)
+    client.indices.create(index=pbcore_full_v1.name, body=pbcore_full_v1.body)
+    ingest('data/*.json', 'pbcore_full_v1')
