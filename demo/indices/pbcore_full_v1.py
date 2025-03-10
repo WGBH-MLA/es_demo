@@ -113,7 +113,12 @@ body = {
                             "type": "nested",
                             "properties": {
                                 "essenceTrackType": { "type": "keyword" },
-                                "essenceTrackIdentifier": { "type": "keyword" },
+                                "essenceTrackIdentifier": {
+                                    "type": "nested",
+                                    "properties": {
+                                        "essenceTrackIdentifier": { "type": "text" }
+                                    }
+                                },
                                 "essenceTrackEncoding": { "type": "keyword" },
                                 "essenceTrackDataRate": {
                                     "type": "nested",
