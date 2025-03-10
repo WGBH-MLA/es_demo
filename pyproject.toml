@@ -9,7 +9,11 @@ authors = [
 requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
-dependencies = ["elasticsearch>=8.17.1"]
+dependencies = [
+    "elasticsearch>=8.17.1",
+    "requests",
+    "beautifulsoup4>=4.13.3"
+]
 
 [build-system]
 requires = ["pdm-backend"]
