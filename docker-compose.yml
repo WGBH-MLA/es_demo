@@ -8,9 +8,15 @@ services:
       - .env
     volumes:
       - ./:/app
-    command: pdm run python -m demo.ingest
+    command: pdm run python
     stdin_open: true
     tty: true
   bash:
     <<: *demo
     command: bash
+  download:
+    <<: *demo
+    command: pdm run python -m demo.download
+  ingest:
+    <<: *demo
+    command: pdm run python -m demo.ingest

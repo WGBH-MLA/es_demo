@@ -19,6 +19,17 @@ def aapb_id_from_pbcore_doc(pbcore_doc):
     except KeyError:
         return None
 
+def transcript_url_from_pbcore_doc(pbcore_doc):
+    """
+    Extracts transcript URL from PBCore JSON document
+    Returns None if not found.
+    """
+    try:
+        return [x for x in pbcore_doc["pbcoreDescriptionDocument"]["pbcoreAnnotation"] if x['annotationType'] == 'Transcript URL' ][0]['text']
+    except KeyError:
+        return None
+
+
 # Generator function to yield PBCore JSON documents from filenames.
 def pbcore_docs(filenames):
     for filename in filenames:
@@ -52,31 +63,34 @@ def pbcore_docs_bulk(pbcore_docs, index_name):
         }
 
 
-def ingest(file_pattern, index_name):
-    """Ingest a single PBCore JSON file into the specified Elasticsearch index."""
-    filenames = glob(file_pattern)
-    docs = list(pbcore_docs(filenames))
-
-    breakpoint()
-
-
+def ingest(file_pattern, index, bulk_threshold=-1):
+    docs = list(pbcore_docs(glob(file_pattern)))
     if not docs:
-        print(f"No pbcore JSON documents found for file pattern {file_pattern}")
+        print(f"No documents found for pattern: {file_pattern}")
         return
-    elif len(docs) == 1:
-        pbcore = docs[0]
-        aapb_id = aapb_id_from_pbcore_doc(pbcore)
-        client.index(index=index_name, id=aapb_id, document=pbcore)
-        print(f"Ingested doc matching {file_pattern} with ID {aapb_id} into {index_name}")
+    
+    print(f"{len(docs)} found matching {file_pattern}, beginning ingest...")
+
+    if len(docs) <= bulk_threshold or bulk_threshold < 0:
+        for pbcore_doc in docs:
+            try:
+                aapb_id = aapb_id_from_pbcore_doc(pbcore_doc)
+                if not aapb_id:
+                    print(f"No AAPB ID found, skipping...")
+                    return
+                client.index(index=index, id=aapb_id, document=pbcore_doc)
+                print(f"Success: {aapb_id}")
+            except Exception as e:
+                print(f"Failed: {aapb_id} -- {e}")
+                continue
     else:
-        print(f"Attempting bulk ingest of {len(docs)} PBCore JSON docs from file pattern {file_pattern} into {index_name}...")
-        results = helpers.bulk(client, pbcore_docs_bulk(docs, index_name))
-        breakpoint()
+        print(f"Bulk ingest of {len(docs)} PBCore JSON docs from file pattern {file_pattern} into {index}...")
+        results = helpers.bulk(client, pbcore_docs_bulk(docs, index))
         print(f"Bulk ingest completed. {results[0]} documents indexed.")
-        
 
 
 if __name__ == "__main__":
+    # Ingest all PBCore JSON files
     client.indices.delete(index=pbcore_full_v1.name)
     client.indices.create(index=pbcore_full_v1.name, body=pbcore_full_v1.body)
-    ingest('data/*.json', 'pbcore_full_v1')
+    ingest('data/pbcore_json/cpb-aacip_15*.json', index=pbcore_full_v1.name)

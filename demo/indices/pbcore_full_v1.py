@@ -107,8 +107,8 @@ body = {
                                 "instantiationDate": { "type": "text" }
                             }
                         },
-                        "instantiationFileSize": { "type": "keyword" },
-                        "instantiationTracks": { "type": "keyword" },
+                        "instantiationFileSize": { "type": "text" },
+                        "instantiationTracks": { "type": "text" },
                         "instantiationEssenceTrack": {
                             "type": "nested",
                             "properties": {
