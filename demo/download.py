@@ -6,7 +6,13 @@ import json
 import requests
 
 
-def download_from_search_url(search_url, fetch_transcripts=True):
+VALID_FORMATS = ["json", "xml"]
+
+def download_from_search_url(search_url, fetch_transcripts=True, format="json"):
+    if format not in VALID_FORMATS:
+        print(f"Invalid format: {format}. Use one of: {VALID_FORMATS}")
+        exit()
+
     # Fetch the search results; bail on fail
     search_response = requests.get(search_url)
     if search_response.status_code != 200:
@@ -26,7 +32,7 @@ def download_from_search_url(search_url, fetch_transcripts=True):
     print(f"Fetching {len(ids)} PBCore JSON documents...")
 
     for id in ids:
-        pbcore_url = f"https://americanarchive.org/api/{id}.json"
+        pbcore_url = f"https://americanarchive.org/api/{id}.{format}"
         print(f"Fetching PBCore JSON for {id}...")
         pbcore_response = requests.get(pbcore_url)
 
@@ -36,9 +42,12 @@ def download_from_search_url(search_url, fetch_transcripts=True):
             continue
 
         # Write the PBCore JSON to a file named with the ID.
-        print(f"Writing PBCore JSON for {id} to data/pbore_json/{id}.txt ...")
-        with open(f"data/pbcore_json/{id}.json", "w") as f:
-            json.dump(pbcore_response.json(), f, indent=4)
+        print(f"Writing PBCore JSON for {id} to data/pbore_json/{id}.{format} ...")
+        with open(f"data/pbcore_{format}/{id}.{format}", "w") as f:
+            if format == "xml":
+                f.write(pbcore_response.text)
+            else:
+                json.dump(pbcore_response.json(), f, indent=4)
 
         if fetch_transcripts:        
             # Fetch the transcript
@@ -71,4 +80,4 @@ if __name__ == "__main__":
 
     for search_url in search_urls:
         print(f"Processing search URL: {search_url}")
-        download_from_search_url(search_url, fetch_transcripts=False)
+        download_from_search_url(search_url, fetch_transcripts=False, format="xml")
