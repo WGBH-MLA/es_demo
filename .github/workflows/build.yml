@@ -15,5 +15,3 @@ jobs:
   build:
     name: 🔨 Build docker image
     uses: WGBH-MLA/.github/.github/workflows/build.yml@main
-    with:
-      target: production
